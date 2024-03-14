@@ -1,12 +1,12 @@
---- This module allows you to create trails for bullets and other projectiles that travel in straigh lines.
+--- This module allows you to create trails for bullets and other projectiles that travel in straight lines.
 ---@code
 --- trail = require("github.com/aduermael/modzh/linetrail")
 ---
 --- -- This will create a trail going from startPos to endPos at a speed of 1000
 --- -- The trail is removed (and recycled) when done, no need to worry about that.
 --- trail:create({
---- 	startPos = Player.Position,
---- 	endPos = Player.Position + Player.Forward * 500,
+--- 	startPos = startPosition,
+--- 	endPos = endPosition,
 --- 	color = Color( 255, 255, 255, 200),
 --- 	speed = 1000,
 ---	})
