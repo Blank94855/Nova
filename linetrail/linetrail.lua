@@ -57,6 +57,11 @@ mod.setDefaultSpeed = function(self, speed)
 	if type(speed) ~= "number" and type(speed) ~= "integer" then
 		error("linetrail:setDefaultSpeed(speed) - speed should be number", 2)
 	end
+
+	if speed <= 0 then
+		error("linetrail:setDefaultSpeed(speed) - speed should greater than 0", 2)
+	end
+
 	defaultConfig.speed = speed
 end
 
@@ -77,6 +82,10 @@ mod.create = function(self, config)
 		error('linetrail:create(config) - config.type should be "quad" or "cube"', 2)
 	end
 
+	if config.speed <= 0 then
+		error("linetrail:create(config) - config.speed should greater than 0", 2)
+	end
+
 	local target = config.endPos:Copy()
 	local isQuad = config.type == "quad"
 
@@ -85,6 +94,7 @@ mod.create = function(self, config)
 		t = table.remove(quadPool)
 		if t == nil then
 			t = Quad()
+			t.Physics = PhysicsMode.Disabled
 			t.IsUnlit = true
 			t.Anchor = { 1, 0.5 }
 		end
@@ -101,6 +111,7 @@ mod.create = function(self, config)
 				cubeShape = Shape(cubeShape)
 			end
 			t = cubeShape:Copy()
+			t.Physics = PhysicsMode.Disabled
 			t.IsUnlit = true
 			t.Pivot = { 1, 0.5, 0.5 }
 		end
