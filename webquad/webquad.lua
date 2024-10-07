@@ -11,13 +11,17 @@ mod = {}
 
 local defaultConfig = {
 	url = "",
-	color = Color.Black, -- Quad color, seen while texture is being loaded
+	cutout = true,
+	alpha = nil,
+	color = Color.White, -- Quad color, seen while texture is being loaded
 }
 
 -- returns Quad and HTTP request
 mod.create = function(_, config)
 	config = require("config"):merge(defaultConfig, config, {
 		acceptTypes = {
+			cutout = { "boolean", "number", "nil" },
+			alpha = { "boolean", "nil" },
 			color = { "Color", "table" },
 		},
 	})
@@ -28,7 +32,11 @@ mod.create = function(_, config)
 		if res.StatusCode ~= 200 then
 			error("webquad: couldn't load image (" .. res.StatusCode .. ")")
 		end
-		q.Image = res.Body
+		q.Image = {
+			data = res.Body,
+			cutout = config.cutout,
+			alpha = config.alpha,
+		}
 	end)
 
 	q.Color = config.color
