@@ -18,7 +18,7 @@ local defaultConfig = {
 	setup = function(debris, config) -- setup for each debris
 		local v = Number3(0, 0, 1) * (config.minVelocity + math.random() * (config.maxVelocity - config.minVelocity))
 		v:Rotate(Number3(math.random() * -math.pi, math.random() * math.pi * 2, 0)) -- random spherical dome directions
-		debris.Velocity = v
+		debris.Velocity:Set(v)
 	end,
 	remove = function(debris)
 		debris:RemoveFromParent()
