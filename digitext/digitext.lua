@@ -15,7 +15,7 @@ local privateFields = setmetatable({}, { __mode = "k" })
 
 local fonts = {}
 fonts["purple-outlined"] = {
-	texture = "https://github.com/aduermael/modzh/blob/main/digitext/fonts/purple-outlined.png?raw=true",
+	texture = "https://files.cu.bzh/digifonts/purple-outlined.png",
 	charSize = Number2(36, 56),
 	-- computed / downloaded:
 	quadData = nil,
