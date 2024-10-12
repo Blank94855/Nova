@@ -5,8 +5,8 @@
 --- local list = dll()
 --- list:pushBack(value)
 --- local value = list:popFront()
---- print(list.front)
---- print(list.back)
+--- print(list:front())
+--- print(list:back())
 --- print("size:", #list)
 
 local privateFields = setmetatable({}, { __mode = "k" })
@@ -122,6 +122,26 @@ local dllMT = {
 			end
 			fields.back = nil
 			fields.size = 0
+		end,
+		front = function(self)
+			fields = privateFields[self]
+			if fields == nil then
+				error("dll:front() should be called with `:`", 2)
+			end
+			if fields.front ~= nil then
+				return fields.front.value
+			end
+			return nil
+		end,
+		back = function(self)
+			fields = privateFields[self]
+			if fields == nil then
+				error("dll:back() should be called with `:`", 2)
+			end
+			if fields.back ~= nil then
+				return fields.back.value
+			end
+			return nil
 		end,
 	},
 	__newindex = function()
