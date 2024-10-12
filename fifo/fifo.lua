@@ -101,6 +101,23 @@ local fifoMT = {
 			end
 			return nil
 		end,
+		iterator = function(self)
+			fields = privateFields[self]
+			if fields == nil then
+				error("fifo:iterator() should be called with `:`", 2)
+			end
+			local current = fields.first
+			local value
+			local isLast
+			return function()
+				if current then
+					value = current.value
+					isLast = current.next == nil
+					current = current.next
+					return value, isLast
+				end
+			end
+		end,
 	},
 	__newindex = function()
 		error("fifo table is read-only", 2)
