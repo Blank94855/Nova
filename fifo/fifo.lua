@@ -5,8 +5,8 @@
 --- local list = fifo()
 --- list:push(value)
 --- local value = list:pop()
---- print(list.first)
---- print(list.last) -- last one that's been pushed
+--- print(list:first())
+--- print(list:last()) -- last one that's been pushed
 --- print("size:", #list)
 
 local privateFields = setmetatable({}, { __mode = "k" })
@@ -80,6 +80,26 @@ local fifoMT = {
 			end
 			fields.last = nil
 			fields.size = 0
+		end,
+		first = function(self)
+			fields = privateFields[self]
+			if fields == nil then
+				error("fifo:first() should be called with `:`", 2)
+			end
+			if fields.first ~= nil then
+				return fields.first.value
+			end
+			return nil
+		end,
+		last = function(self)
+			fields = privateFields[self]
+			if fields == nil then
+				error("fifo:last() should be called with `:`", 2)
+			end
+			if fields.last ~= nil then
+				return fields.last.value
+			end
+			return nil
 		end,
 	},
 	__newindex = function()
