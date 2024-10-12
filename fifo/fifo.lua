@@ -37,7 +37,7 @@ local fifoMT = {
 		push = function(self, value)
 			fields = privateFields[self]
 			if fields == nil then
-				error("fifoList:push(value) should be called with `:`", 2)
+				error("fifo:push(value) should be called with `:`", 2)
 			end
 			-- note: it's ok to push a nil value
 			n = getOrCreateNode(value)
@@ -53,7 +53,7 @@ local fifoMT = {
 		pop = function(self)
 			fields = privateFields[self]
 			if fields == nil then
-				error("fifoList:pop(value) should be called with `:`", 2)
+				error("fifo:pop(value) should be called with `:`", 2)
 			end
 			n = fields.first
 			if n ~= nil then
@@ -68,6 +68,19 @@ local fifoMT = {
 			end
 			return nil
 		end,
+		flush = function(self)
+			fields = privateFields[self]
+			if fields == nil then
+				error("fifo:flush() should be called with `:`", 2)
+			end
+			while fields.first ~= nil do
+				n = fields.first
+				fields.first = n.next
+				recycleNode(n)
+			end
+			fields.last = nil
+			fields.size = 0
+		end,
 	},
 	__newindex = function()
 		error("fifo table is read-only", 2)
@@ -75,7 +88,7 @@ local fifoMT = {
 	__len = function(l)
 		fields = privateFields[l]
 		if fields == nil then
-			return
+			return 0
 		end
 		return fields.size
 	end,
