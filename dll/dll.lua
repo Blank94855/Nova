@@ -3,11 +3,16 @@
 ---@code
 --- dll = require("github.com/aduermael/modzh/dll")
 --- local list = dll()
---- list:pushBack(value)
---- local value = list:popFront()
---- print(list:front())
---- print(list:back())
---- print("size:", #list)
+--- list:pushBack(value)  -- Adds a value to the end of the list
+--- list:pushFront(value)  -- Adds a value to the front of the list
+--- local value = list:popFront()  -- Removes and returns the first value
+--- local value = list:popBack()  -- Removes and returns the last value
+--- list:flush()  -- Removes all elements from the list
+--- print(list:front())  -- Returns the first value without removing it
+--- print(list:back())  -- Returns the last value without removing it
+--- for value, isLast in list:iteratorFrontToBack() do  -- Iterates from front to back
+--- for value, isFirst in list:iteratorBackToFront() do  -- Iterates from back to front
+--- print("size:", #list)  -- Returns the number of elements in the list
 
 local privateFields = setmetatable({}, { __mode = "k" })
 
@@ -142,6 +147,40 @@ local dllMT = {
 				return fields.back.value
 			end
 			return nil
+		end,
+		iteratorFrontToBack = function(self)
+			fields = privateFields[self]
+			if fields == nil then
+				error("dll:iteratorFrontToBack() should be called with `:`", 2)
+			end
+			local current = fields.front
+			local value
+			local isLast
+			return function()
+				if current then
+					value = current.value
+					isLast = current.next == nil
+					current = current.next
+					return value, isLast
+				end
+			end
+		end,
+		iteratorBackToFront = function(self)
+			fields = privateFields[self]
+			if fields == nil then
+				error("dll:iteratorBackToFront() should be called with `:`", 2)
+			end
+			local current = fields.back
+			local value
+			local isFirst
+			return function()
+				if current then
+					value = current.value
+					isFirst = current.prev == nil
+					current = current.prev
+					return value, isFirst
+				end
+			end
 		end,
 	},
 	__newindex = function()
