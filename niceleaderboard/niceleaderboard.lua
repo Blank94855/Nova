@@ -43,6 +43,7 @@ setmetatable(mod, {
 			error("niceLeaderboard(config) - config error: " .. err, 2)
 		end
 
+		local status = "loading"
 		local leaderboard
 
 		local requests = {}
@@ -64,17 +65,17 @@ setmetatable(mod, {
 
 		local recycledCells = {}
 
+		local cellSelector = ui:frameScrollCellSelector()
+		cellSelector:setParent(nil)
+
 		local scroll
 
 		local cellParentDidResize = function(self)
-			local parent = self.parent or scroll
+			local parent = scroll
 			if parent == nil then
 				return
 			end
-			self.Width = parent.Width
-			if parent == scroll then
-				self.Width = self.Width - 4
-			end
+			self.Width = parent.Width - 4
 
 			local availableWidth = self.Width - theme.padding * 3 - AVATAR_SIZE
 
@@ -111,6 +112,12 @@ setmetatable(mod, {
 				theme.padding,
 				self.Height * 0.5 - AVATAR_SIZE * 0.5 + theme.paddingTiny,
 			}
+
+			if self.userID == Player.UserID then
+				cellSelector:setParent(self)
+				cellSelector.Width = self.Width
+				cellSelector.Height = self.Height
+			end
 		end
 
 		local function formatNumber(num)
@@ -125,71 +132,139 @@ setmetatable(mod, {
 			return formatted
 		end
 
+		local messageCell
+
+		local functions = {}
+
 		local loadCell = function(index)
-			if index <= #friendScores then
-				local cell = table.remove(recycledCells)
-				if cell == nil then
-					cell = ui:frameScrollCell()
+			if status == "scores" then
+				if index <= #friendScores then
+					local cell = table.remove(recycledCells)
+					if cell == nil then
+						cell = ui:frameScrollCell()
 
-					cell.username = ui:createText("", { color = Color.White })
-					cell.username:setParent(cell)
+						cell.username = ui:createText("", { color = Color.White })
+						cell.username:setParent(cell)
 
-					cell.score = ui:createText("", { color = Color(200, 200, 200) })
-					cell.score:setParent(cell)
+						cell.score = ui:createText("", { color = Color(200, 200, 200) })
+						cell.score:setParent(cell)
 
-					cell.extraLine = ui:createText("", { color = Color(100, 100, 100), size = "small" })
-					cell.extraLine:setParent(cell)
+						cell.extraLine = ui:createText("", { color = Color(100, 100, 100), size = "small" })
+						cell.extraLine:setParent(cell)
 
-					cell.avatar = uiAvatar:getHeadAndShoulders({
-						-- usernameOrId = score.userID,
-					})
-					cell.avatar:setParent(cell)
-					cell.avatar.Width = AVATAR_SIZE
-					cell.avatar.Height = AVATAR_SIZE
+						cell.avatar = uiAvatar:getHeadAndShoulders({
+							-- usernameOrId = score.userID,
+						})
+						cell.avatar:setParent(cell)
+						cell.avatar.Width = AVATAR_SIZE
+						cell.avatar.Height = AVATAR_SIZE
 
-					cell.parentDidResize = cellParentDidResize
-					cell.onPress = function(self)
-						Client:HapticFeedback()
-					end
+						cell.parentDidResize = cellParentDidResize
+						cell.onPress = function(_)
+							cell:getQuad().Color = Color(220, 220, 220)
+							Client:HapticFeedback()
+						end
 
-					cell.onRelease = function(self)
-						if self.userID ~= nil and self.username.Text ~= nil then
-							Menu:ShowProfile({
-								id = self.userID,
-								username = self.username.Text,
-							})
+						cell.onRelease = function(self)
+							if self.userID ~= nil and self.username.Text ~= nil then
+								Menu:ShowProfile({
+									id = self.userID,
+									username = self.username.Text,
+								})
+							end
+							cell:getQuad().Color = Color.White
+						end
+
+						cell.onCancel = function(_)
+							cell:getQuad().Color = Color.White
 						end
 					end
 
-					-- cell.onCancel = function(_)
-					-- 	cellSelector:setParent(nil)
-					-- end
+					local score = friendScores[index]
+
+					cell.userID = score.userID
+					cell.username.Text = score.user.username
+					cell.score.Text = formatNumber(score.score)
+					cell.avatar:load({ usernameOrId = score.userID })
+
+					cell:getQuad().Color = Color.White
+
+					if config.extraLine ~= nil then
+						cell.extraLine.Text = config.extraLine(score)
+						cell.extraLine:show()
+					else
+						cell.extraLine:hide()
+					end
+
+					cell:parentDidResize()
+
+					return cell
 				end
+			elseif status == "no_scores" or status == "error" then
+				if index == 1 then
+					if messageCell == nil then
+						messageCell = ui:frame()
 
-				local score = friendScores[index]
+						messageCell.label = ui:createText("This is a test", { color = Color.White, size = "small" })
+						messageCell.label:setParent(messageCell)
 
-				cell.userID = score.userID
-				cell.username.Text = score.user.username
-				cell.score.Text = formatNumber(score.score)
-				cell.avatar:load({ usernameOrId = score.userID })
+						messageCell.btn = ui:buttonNeutral({ content = "Test", textSize = "small" })
+						messageCell.btn:setParent(messageCell)
 
-				if config.extraLine ~= nil then
-					cell.extraLine.Text = config.extraLine(score)
-					cell.extraLine:show()
-				else
-					cell.extraLine:hide()
+						messageCell.parentDidResize = function(self)
+							local parent = scroll
+							if parent == nil then
+								return
+							end
+							self.Width = parent.Width - 4
+
+							messageCell.label.object.MaxWidth = self.Width - theme.padding * 2
+
+							self.Height = math.max(
+								parent.Height - 4,
+								messageCell.label.Height + self.btn.Height + theme.padding * 3
+							)
+
+							local h = self.btn.Height + theme.padding + self.label.Height
+							local y = self.Height * 0.5 - h * 0.5
+
+							self.btn.pos = {
+								self.Width * 0.5 - self.btn.Width * 0.5,
+								y,
+							}
+							self.label.pos = {
+								self.Width * 0.5 - self.label.Width * 0.5,
+								self.btn.pos.Y + self.btn.Height + theme.padding,
+							}
+						end
+					end
+
+					if status == "no_scores" then
+						messageCell.label.Text = "No scores to display yet!"
+						messageCell.btn.Text = "👥 Add Friends"
+						messageCell.btn.onRelease = function()
+							Menu:ShowFriends()
+						end
+					else
+						messageCell.label.Text = "❌ Error: couldn't load scores."
+						messageCell.btn.Text = "Retry"
+						messageCell.btn.onRelease = function()
+							functions.refresh()
+						end
+					end
+
+					messageCell:parentDidResize()
+
+					return messageCell
 				end
-
-				cell:parentDidResize()
-				-- cell.Height = cell.Height
-
-				return cell
 			end
 		end
 
 		local unloadCell = function(_, cell)
 			cell:setParent(nil)
-			table.insert(recycledCells, cell)
+			if cell ~= messageCell then
+				table.insert(recycledCells, cell)
+			end
 		end
 
 		local node = ui:frameTextBackground()
@@ -251,8 +326,10 @@ setmetatable(mod, {
 				node:parentDidResize()
 			end
 		end
+		functions.refresh = refresh
 
 		local function displayScores(scores)
+			status = "scores"
 			nbUserInfoToFetch = #scores
 			localUserScrollIndex = nil
 
@@ -294,9 +371,11 @@ setmetatable(mod, {
 		leaderboard = Leaderboard(config.leaderboardName)
 
 		local function load()
+			status = "loading"
 			cancelRequests()
 			friendScores = {}
 
+			cellSelector:setParent(nil)
 			scroll:hide()
 			scroll:flush()
 			loading:show()
@@ -309,6 +388,12 @@ setmetatable(mod, {
 				limit = 10,
 				callback = function(scores, err)
 					if err ~= nil then
+						if string.find(err, "404") then
+							status = "no_scores"
+						else
+							status = "error"
+						end
+						refresh()
 						return
 					end
 
@@ -328,6 +413,12 @@ setmetatable(mod, {
 						limit = 10,
 						callback = function(scores, err)
 							if err ~= nil then
+								if string.find(err, "404") then
+									status = "no_scores"
+								else
+									status = "error"
+								end
+								refresh()
 								return
 							end
 							displayScores(scores)
