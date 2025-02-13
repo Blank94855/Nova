@@ -6,6 +6,10 @@
 
 local mod = {}
 
+-- compatibility fix as the platform is transitioning to Luau.
+-- `typeof` should be used instead of `type`.
+local type = typeof and typeof or type
+
 local conf = require("config")
 local hierarchyActions = require("hierarchyactions")
 local defaultConfig = {
