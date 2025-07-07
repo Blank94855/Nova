@@ -80,20 +80,21 @@ setmetatable(mod, {
 			local availableWidth = self.Width - theme.padding * 3 - AVATAR_SIZE
 
 			self.username.object.Scale = 1
-			local scale = math.min(1, availableWidth / self.username.Width)
-			self.username.object.Scale = scale
-
 			self.score.object.Scale = 1
-			scale = math.min(1, availableWidth / self.score.Width)
-			self.score.object.Scale = scale
 
 			self.Height = self.score.Height + self.username.Height + theme.padding * 2
 			if self.extraLine:isVisible() then
+                self.extraLine.object.Scale = 1
 				self.Height = self.Height + self.extraLine.Height
-				self.extraLine.object.Scale = 1
 				scale = math.min(1, availableWidth / self.extraLine.Width)
 				self.extraLine.object.Scale = scale
 			end
+
+            local scale = math.min(1, availableWidth / self.username.Width)
+			self.username.object.Scale = scale
+
+            scale = math.min(1, availableWidth / self.score.Width)
+			self.score.object.Scale = scale
 
 			self.username.pos = {
 				theme.padding * 2 + AVATAR_SIZE + availableWidth * 0.5 - self.username.Width * 0.5,
