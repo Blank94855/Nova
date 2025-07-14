@@ -14,6 +14,7 @@ local defaultConfig = {
 	cutout = true,
 	alpha = nil,
 	color = Color.White, -- Quad color, seen while texture is being loaded
+	filtering = true,
 }
 
 -- returns Quad and HTTP request
@@ -23,6 +24,7 @@ mod.create = function(_, config)
 			cutout = { "boolean", "number", "nil" },
 			alpha = { "boolean", "nil" },
 			color = { "Color", "table" },
+			filtering = { "boolean" },
 		},
 	})
 
@@ -36,6 +38,7 @@ mod.create = function(_, config)
 			data = res.Body,
 			cutout = config.cutout,
 			alpha = config.alpha,
+			filtering = config.filtering,
 		}
 	end)
 
