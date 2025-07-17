@@ -12,6 +12,12 @@ mod.play = function(self, config)
 	if self ~= mod then
 		error("music:play() should be called with `:`", 2)
 	end
+
+	if config == nil and music ~= nil then
+		music:Play()
+		return
+	end
+
 	local defaultConfig = {
 		volume = 0.3,
 		track = "arcade-synthwave",
@@ -31,6 +37,12 @@ mod.play = function(self, config)
 		World:AddChild(music)
 		music:Play()
 	end)
+end
+
+mod.stop = function(self)
+	if music then
+		music:Stop()
+	end
 end
 
 return mod
