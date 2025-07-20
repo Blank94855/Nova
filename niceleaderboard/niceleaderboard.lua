@@ -385,7 +385,7 @@ setmetatable(mod, {
 			-- load neighbors only if user not in top 5
 			local req = leaderboard:get({
 				mode = "best",
-				friends = true,
+				friends = false,
 				limit = 10,
 				callback = function(scores, err)
 					if err ~= nil then
